@@ -223,9 +223,6 @@ class QuerySet(object):
         combined.query.combine(other.query, sql.OR)
         return combined
 
-    def __contains__(self, obj):
-        return isinstance(obj, self.model) and self.filter(pk=obj.pk).exists()
-
     ####################################
     # METHODS THAT DO DATABASE QUERIES #
     ####################################
@@ -580,6 +577,11 @@ class QuerySet(object):
         if self._result_cache is None:
             return self.query.has_results(using=self.db)
         return bool(self._result_cache)
+    
+    def contains(self, obj):
+        if self._result_cache is not None:
+            return obj in self._result_cache
+        return isinstance(obj, self.model) and self.filter(pk=obj.pk).exists()
 
     def _prefetch_related_objects(self):
         # This method can only be called once the result cache has been filled.
